@@ -28,6 +28,4 @@ sysadmin-config.json
 # Временные артефакты ревизий и audit-сессий (Explore-агенты,
 # промежуточные отчёты) — не часть репо.
 .audit-tmp/
-vpn-architecture.mmd
-vpn-architecture.md
-vpn-architecture.svg
+vpn-architecture*
