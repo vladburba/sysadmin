@@ -533,6 +533,19 @@ source "$LIB/self-test-setup.sh"
 if self_test_setup "$CONFIG_PATH" "$SYSADMIN_ROOT"; then
     echo ""
     echo "Готово. Конфиг записан и полностью проверен: $CONFIG_PATH"
+
+    # --- Активация версионируемого pre-commit hook репо sysadmin ----------
+    # Хук .githooks/pre-commit блокирует коммит при рассинхроне персоны
+    # (выжимка sysadmin.md ↔ references/). Он версионируется в репо, но
+    # core.hooksPath нужно включить ОДИН раз на машине — делаем это здесь,
+    # идемпотентно. Не валим init, если что-то не так с git (опциональная фича).
+    if [ -d "$SYSADMIN_ROOT/.git" ] && [ -f "$SYSADMIN_ROOT/.githooks/pre-commit" ]; then
+        if [ "$(git -C "$SYSADMIN_ROOT" config core.hooksPath 2>/dev/null)" != ".githooks" ]; then
+            git -C "$SYSADMIN_ROOT" config core.hooksPath .githooks 2>/dev/null \
+                && echo "→ pre-commit hook активирован (core.hooksPath=.githooks): защита персоны от рассинхрона." \
+                || echo "⚠️  не удалось включить core.hooksPath — пропускаю (необязательная фича)."
+        fi
+    fi
     # дальше — Шаг 11 (подсказки по следующим шагам)
 else
     # self_test_setup уже напечатал честный вердикт с инструкцией «свяжись с разработчиком».
@@ -592,7 +605,15 @@ exit 0
 Вывожу адаптированный список скиллов в зависимости от ответов оператора:
 
 ```
-Создал sysadmin-config.json в твоей папке infra/. Что дальше — пошагово:
+Конфиг создан: {CONFIG_PATH}
+
+Где работать дальше: открывай Claude Code в РОДИТЕЛЬСКОЙ папке — той, где
+рядом лежат sysadmin/ (мой мозг) и infra/ (твои данные). Это самое удобное
+место: оба репо видны сразу, и я найду конфиг автоматически. Но технически
+вызывать @sysadmin можно из любой папки — я подхвачу конфиг по алгоритму
+Cold Start (см. references/cold-start.md).
+
+Что дальше — пошагово:
 
 1. [Если inventory/hosts/ пуст] Запусти /bootstrap-new-server для базовой настройки
    SSH/UFW/fail2ban/Docker/git+gitleaks на сервере {server.alias}.
